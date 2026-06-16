@@ -206,22 +206,47 @@
   }
   function playSlash(){
     const ac=audio(); if(!ac) return;
-    const t=ac.currentTime, dur=0.2;
-    // airy swoosh: filtered noise sweeping up
+    const t=ac.currentTime, dur=0.3;
+    // airy swoosh: filtered noise sweeping up (heavier)
     const buf=ac.createBuffer(1, Math.floor(ac.sampleRate*dur), ac.sampleRate);
     const d=buf.getChannelData(0);
     for(let i=0;i<d.length;i++){ d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2); }
     const src=ac.createBufferSource(); src.buffer=buf;
-    const bp=ac.createBiquadFilter(); bp.type="bandpass"; bp.Q.value=0.9;
-    bp.frequency.setValueAtTime(700,t); bp.frequency.exponentialRampToValueAtTime(4200,t+dur);
-    const g=ac.createGain(); g.gain.setValueAtTime(0.45,t); g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+    const bp=ac.createBiquadFilter(); bp.type="bandpass"; bp.Q.value=0.8;
+    bp.frequency.setValueAtTime(500,t); bp.frequency.exponentialRampToValueAtTime(4600,t+dur);
+    const g=ac.createGain(); g.gain.setValueAtTime(0.6,t); g.gain.exponentialRampToValueAtTime(0.001,t+dur);
     src.connect(bp); bp.connect(g); g.connect(ac.destination); src.start(t); src.stop(t+dur);
+    // deep bass impact ("boom" of the cut)
+    const lo=ac.createOscillator(); lo.type="sine";
+    lo.frequency.setValueAtTime(170,t); lo.frequency.exponentialRampToValueAtTime(42,t+0.26);
+    const lg=ac.createGain(); lg.gain.setValueAtTime(0.0001,t);
+    lg.gain.linearRampToValueAtTime(0.75,t+0.02); lg.gain.exponentialRampToValueAtTime(0.001,t+0.34);
+    lo.connect(lg); lg.connect(ac.destination); lo.start(t); lo.stop(t+0.36);
     // metallic ring of the blade
     const o=ac.createOscillator(); o.type="triangle";
-    o.frequency.setValueAtTime(1300,t+0.03); o.frequency.exponentialRampToValueAtTime(520,t+0.28);
-    const g2=ac.createGain(); g2.gain.setValueAtTime(0.0001,t+0.03);
-    g2.gain.linearRampToValueAtTime(0.16,t+0.05); g2.gain.exponentialRampToValueAtTime(0.001,t+0.32);
-    o.connect(g2); g2.connect(ac.destination); o.start(t+0.03); o.stop(t+0.34);
+    o.frequency.setValueAtTime(1300,t+0.04); o.frequency.exponentialRampToValueAtTime(520,t+0.3);
+    const g2=ac.createGain(); g2.gain.setValueAtTime(0.0001,t+0.04);
+    g2.gain.linearRampToValueAtTime(0.2,t+0.06); g2.gain.exponentialRampToValueAtTime(0.001,t+0.36);
+    o.connect(g2); g2.connect(ac.destination); o.start(t+0.04); o.stop(t+0.38);
+  }
+
+  // ---- samurai battle cry (browser speech synthesis, Japanese) ----
+  let jaVoice=null;
+  function pickVoice(){
+    if(!("speechSynthesis" in window)) return;
+    const vs=speechSynthesis.getVoices();
+    jaVoice = vs.find(v=>/ja[-_]?JP/i.test(v.lang)) || vs.find(v=>/japan/i.test(v.name)) || null;
+  }
+  if("speechSynthesis" in window){ pickVoice(); speechSynthesis.onvoiceschanged=pickVoice; }
+  const KIAI=["成敗！","覚悟！","斬る！","やあっ！"];
+  function playKiai(){
+    if(!("speechSynthesis" in window)) return;
+    try{
+      const u=new SpeechSynthesisUtterance(KIAI[Math.floor(Math.random()*KIAI.length)]);
+      u.lang="ja-JP"; if(jaVoice) u.voice=jaVoice;
+      u.rate=1.05; u.pitch=0.6; u.volume=1;
+      speechSynthesis.cancel(); speechSynthesis.speak(u);
+    }catch(e){}
   }
 
   // hero sprite: idle PNG with SVG fallback
@@ -370,6 +395,7 @@
     const targetY=(cardBottom-30)-heroTop;
     heroEl.classList.remove("idleanim");
     setHeroPose("pose_run");
+    playKiai(); // battle cry as he lunges
     heroEl.style.transition="transform .5s cubic-bezier(.3,.7,.4,1)";
     requestAnimationFrame(()=>{ heroEl.style.transform=`translate(${targetX}px,${targetY}px)`; });
     setTimeout(()=>{
@@ -446,7 +472,7 @@
 
   renderHearts();
   $("hiLbl").textContent = hi? "Best: "+hi : "";
-  $("startBtn").addEventListener("click",()=>{ audio(); $("titleScreen").classList.add("hidden"); $("row").classList.remove("hidden"); startGame(); });
+  $("startBtn").addEventListener("click",()=>{ audio(); pickVoice(); $("titleScreen").classList.add("hidden"); $("row").classList.remove("hidden"); startGame(); });
   $("retryBtn").addEventListener("click",()=>{ $("overScreen").classList.add("hidden"); startGame(); });
 })();
 </script>
