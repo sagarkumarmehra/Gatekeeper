@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gatekeeper — visual direction</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0d0a1a; --plum:#2a1840; --rose:#c4475f; --gold:#f0b54a; --jade:#5ad17a;
+    --paper:#f3e6c4; --mist:rgba(243,230,196,.10);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Outfit',system-ui,sans-serif; color:var(--paper);
+    background:radial-gradient(1200px 600px at 50% -10%, #3a2350, #14101f 70%);
+    min-height:100vh; padding:28px 16px 60px; display:flex; flex-direction:column; align-items:center;
+  }
+  h1{font-family:'Cinzel',serif; font-size:26px; letter-spacing:.5px; color:var(--paper);
+     text-align:center; text-shadow:0 2px 16px rgba(240,181,74,.35)}
+  h1 .jp{color:var(--gold)}
+  .subtitle{color:#bfa9da; text-align:center; max-width:620px; margin:8px auto 22px; font-size:14px}
+
+  .stage{
+    width:340px; height:600px; border-radius:40px; padding:10px;
+    background:linear-gradient(160deg,#241634,#120c1f);
+    border:2px solid #4a335f;
+    box-shadow:0 30px 70px rgba(0,0,0,.6), inset 0 0 0 6px #1a1228;
+    position:relative;
+  }
+  .screen{position:absolute; inset:10px; border-radius:32px; overflow:hidden;
+    background:linear-gradient(#1b2a52 0%, #3a2c63 38%, #7d3f5e 72%, #c0635a 100%);}
+
+  .stars{position:absolute; inset:0}
+  .star{position:absolute; width:2px; height:2px; background:#fff; border-radius:50%; opacity:.8;
+    animation:tw 3s infinite alternate}
+  @keyframes tw{to{opacity:.2}}
+  .moon{position:absolute; top:34px; right:38px; width:64px; height:64px; border-radius:50%;
+    background:radial-gradient(circle at 35% 35%, #fff8e1, #f0d98a);
+    box-shadow:0 0 50px 10px rgba(240,217,138,.55)}
+  .fuji{position:absolute; bottom:150px; left:50%; transform:translateX(-50%);
+    width:0;height:0;border-left:130px solid transparent;border-right:130px solid transparent;
+    border-bottom:120px solid #2c2350; opacity:.65}
+  .fuji::after{content:"";position:absolute; top:0; left:-46px; border-left:46px solid transparent;
+    border-right:46px solid transparent; border-bottom:42px solid #ece7f5}
+  .torii{position:absolute; bottom:120px; left:40px; width:60px; height:70px; opacity:.9}
+  .fog{position:absolute; left:-20%; width:140%; height:60px; border-radius:50%;
+    background:rgba(243,230,196,.10); filter:blur(8px); animation:drift 14s linear infinite}
+  .fog.f1{bottom:150px} .fog.f2{bottom:90px; animation-duration:20s; opacity:.7}
+  @keyframes drift{from{transform:translateX(-8%)}to{transform:translateX(8%)}}
+
+  .hud{position:absolute; top:14px; left:14px; right:14px; display:flex; justify-content:space-between; align-items:flex-start; z-index:5}
+  .honor{width:130px}
+  .honor .label{font-size:9px; letter-spacing:2px; color:#f0cd8a; font-weight:800}
+  .bar{height:12px; border-radius:8px; background:#2a1c3e; border:1px solid #6a4d86; margin-top:3px; overflow:hidden}
+  .bar>i{display:block; height:100%; width:74%; border-radius:8px;
+    background:linear-gradient(90deg,#5ad17a,#b6f06b); box-shadow:0 0 10px #5ad17a}
+  .score{text-align:right}
+  .score b{font-family:'Cinzel',serif; font-size:22px; color:#fff; display:block; text-shadow:0 0 12px rgba(240,181,74,.6)}
+  .score .lvl{font-size:10px; letter-spacing:2px; color:#f0cd8a; font-weight:800}
+  .combo{position:absolute; top:64px; right:14px; font-family:'Cinzel',serif; font-weight:800;
+    color:#ffd36b; font-size:15px; text-shadow:0 0 14px #f0b54a; transform:rotate(6deg)}
+
+  .row{position:absolute; top:200px; left:0; right:0; display:flex; justify-content:space-around; align-items:flex-end; z-index:4}
+  .char{width:62px; cursor:pointer; transition:transform .15s; filter:drop-shadow(0 6px 6px rgba(0,0,0,.4))}
+  .char:hover{transform:translateY(-8px) scale(1.05)}
+  .tag{position:absolute; bottom:-6px; left:50%; transform:translateX(-50%); font-size:9px;
+    color:#ffce6a; font-weight:800; white-space:nowrap; opacity:0; transition:.15s}
+  .char.imp:hover .tag{opacity:1}
+
+  .ground{position:absolute; bottom:0; left:0; right:0; height:150px;
+    background:linear-gradient(#7a3a55, #43213a)}
+  .grid{position:absolute; bottom:24px; left:50%; transform:translateX(-50%) perspective(420px) rotateX(46deg);
+    display:grid; grid-template-columns:repeat(4,46px); grid-template-rows:repeat(3,46px); gap:6px; z-index:3}
+  .tile{border-radius:8px; background:rgba(20,12,30,.5); border:1px solid rgba(243,230,196,.18)}
+  .tile.lit{background:radial-gradient(circle,#ffcf6b,#e0902f); box-shadow:0 0 22px #f0b54a}
+  .tile.guard{background:radial-gradient(circle,#5fa0e0,#2f4f9e); box-shadow:0 0 16px #4f7fd0}
+
+  .hero{position:absolute; bottom:18px; left:18px; width:86px; z-index:6;
+    filter:drop-shadow(0 8px 10px rgba(0,0,0,.5)); animation:bob 3.5s ease-in-out infinite}
+  @keyframes bob{50%{transform:translateY(-5px)}}
+
+  .beats{display:flex; gap:12px; margin-top:24px; flex-wrap:wrap; justify-content:center; max-width:720px}
+  .beat{width:160px; background:linear-gradient(160deg,#271a3c,#1a1228); border:1px solid #43305c;
+    border-radius:16px; padding:14px; cursor:pointer; transition:.18s; text-align:center}
+  .beat:hover{border-color:var(--gold); transform:translateY(-4px); box-shadow:0 12px 28px rgba(0,0,0,.4)}
+  .beat .ic{font-size:24px} .beat h3{font-family:'Cinzel',serif; font-size:14px; margin:6px 0 4px; color:#ffd887}
+  .beat p{font-size:11px; color:#bfa9da; line-height:1.4}
+  .beat.sel{border-color:var(--gold); box-shadow:0 0 0 2px var(--gold) inset}
+</style>
+</head>
+<body>
+  <h1>GATEKEEPER · <span class="jp">門番</span></h1>
+  <p class="subtitle">A lone samurai guards the village gate. Watch the raid path, set your defenses, then slash the disguised oni hiding among the villagers. SVG figures here are placeholders — your Canva/AI PNG sprites drop into these exact spots.</p>
+
+  <div class="stage">
+    <div class="screen">
+      <div class="stars" id="stars"></div>
+      <div class="moon"></div>
+      <div class="fuji"></div>
+
+      <svg class="torii" viewBox="0 0 60 70">
+        <rect x="4" y="14" width="52" height="7" rx="2" fill="#d23b3b"/>
+        <rect x="8" y="22" width="44" height="4" fill="#a32a2a"/>
+        <rect x="12" y="24" width="7" height="46" fill="#d23b3b"/>
+        <rect x="41" y="24" width="7" height="46" fill="#d23b3b"/>
+        <rect x="2" y="10" width="56" height="6" rx="3" fill="#e85b5b"/>
+      </svg>
+
+      <div class="fog f1"></div>
+      <div class="fog f2"></div>
+
+      <div class="hud">
+        <div class="honor">
+          <div class="label">VILLAGE HONOR</div>
+          <div class="bar"><i></i></div>
+        </div>
+        <div class="score"><span class="lvl">NIGHT 4</span><b>2,480</b></div>
+      </div>
+      <div class="combo">×3 COMBO!</div>
+
+      <div class="row">
+        <svg class="char" viewBox="0 0 60 90">
+          <ellipse cx="30" cy="86" rx="16" ry="4" fill="rgba(0,0,0,.3)"/>
+          <path d="M16 50 Q30 44 44 50 L46 84 Q30 90 14 84 Z" fill="#3f6e8c"/>
+          <circle cx="30" cy="32" r="16" fill="#f3d2a8"/>
+          <path d="M14 30 Q30 8 46 30 Q44 18 30 16 Q16 18 14 30Z" fill="#3a2b24"/>
+          <circle cx="24" cy="33" r="2.4" fill="#2a1c14"/><circle cx="36" cy="33" r="2.4" fill="#2a1c14"/>
+          <path d="M25 40 Q30 43 35 40" stroke="#a86a4a" stroke-width="2" fill="none" stroke-linecap="round"/>
+        </svg>
+        <div style="position:relative">
+        <svg class="char imp" viewBox="0 0 60 96">
+          <ellipse cx="30" cy="92" rx="16" ry="4" fill="rgba(0,0,0,.3)"/>
+          <path d="M16 56 Q30 50 44 56 L46 90 Q30 96 14 90 Z" fill="#3f6e8c"/>
+          <path d="M18 22 L14 8 L22 20Z" fill="#e8e0d0"/>
+          <path d="M42 22 L46 8 L38 20Z" fill="#e8e0d0"/>
+          <circle cx="30" cy="38" r="16" fill="#c98a8a"/>
+          <path d="M14 36 Q30 14 46 36 Q44 24 30 22 Q16 24 14 36Z" fill="#2a1d2e"/>
+          <circle cx="24" cy="39" r="3" fill="#ffd23b"/><circle cx="36" cy="39" r="3" fill="#ffd23b"/>
+          <circle cx="24" cy="39" r="1.2" fill="#b00"/><circle cx="36" cy="39" r="1.2" fill="#b00"/>
+          <path d="M24 47 Q30 52 36 47" stroke="#5a1a1a" stroke-width="2" fill="none"/>
+          <path d="M27 47 L29 53 L31 47Z" fill="#fff"/>
+        </svg>
+        <span class="tag">ONI! tap to slash</span>
+        </div>
+        <svg class="char" viewBox="0 0 60 90">
+          <ellipse cx="30" cy="86" rx="16" ry="4" fill="rgba(0,0,0,.3)"/>
+          <path d="M16 50 Q30 44 44 50 L46 84 Q30 90 14 84 Z" fill="#7a4f8c"/>
+          <circle cx="30" cy="32" r="16" fill="#f3d2a8"/>
+          <path d="M13 32 Q30 10 47 32 Q46 20 30 17 Q14 20 13 32Z" fill="#1f1a26"/>
+          <circle cx="24" cy="33" r="2.4" fill="#2a1c14"/><circle cx="36" cy="33" r="2.4" fill="#2a1c14"/>
+          <path d="M25 40 Q30 43 35 40" stroke="#a86a4a" stroke-width="2" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+
+      <div class="ground"></div>
+      <div class="grid">
+        <div class="tile"></div><div class="tile guard"></div><div class="tile lit"></div><div class="tile"></div>
+        <div class="tile"></div><div class="tile guard"></div><div class="tile lit"></div><div class="tile"></div>
+        <div class="tile"></div><div class="tile"></div><div class="tile lit"></div><div class="tile"></div>
+      </div>
+
+      <svg class="hero" viewBox="0 0 90 130">
+        <ellipse cx="45" cy="126" rx="26" ry="5" fill="rgba(0,0,0,.35)"/>
+        <rect x="70" y="20" width="4" height="80" rx="2" fill="#dfe6ee" transform="rotate(12 72 60)"/>
+        <rect x="66" y="78" width="12" height="5" rx="2" fill="#caa23a" transform="rotate(12 72 60)"/>
+        <path d="M34 90 L30 124 L40 124 L44 96Z" fill="#23304f"/>
+        <path d="M50 92 L54 124 L64 124 L58 90Z" fill="#23304f"/>
+        <path d="M28 56 Q45 48 62 56 L66 96 Q45 104 24 96Z" fill="#b23a4a"/>
+        <path d="M28 56 Q45 50 62 56 L60 72 Q45 78 30 72Z" fill="#d24a5a"/>
+        <rect x="40" y="60" width="10" height="34" fill="#7a2333" opacity=".5"/>
+        <path d="M22 58 Q28 50 40 56 L36 70 Q26 70 22 58Z" fill="#3a2b24"/>
+        <path d="M68 58 Q62 50 50 56 L54 70 Q64 70 68 58Z" fill="#3a2b24"/>
+        <circle cx="45" cy="38" r="16" fill="#f5d6ab"/>
+        <path d="M29 38 Q45 14 61 38 Q60 24 45 21 Q30 24 29 38Z" fill="#1c1726"/>
+        <circle cx="45" cy="16" r="5" fill="#1c1726"/>
+        <rect x="29" y="30" width="32" height="5" rx="2" fill="#e0c14a"/>
+        <circle cx="45" cy="32.5" r="3" fill="#c4475f"/>
+        <path d="M36 38 q3 -4 6 0" stroke="#241a2e" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+        <path d="M48 38 q3 -4 6 0" stroke="#241a2e" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+        <circle cx="39" cy="40" r="1.6" fill="#3aa0e0"/><circle cx="51" cy="40" r="1.6" fill="#3aa0e0"/>
+        <path d="M41 47 q4 3 8 0" stroke="#9a5a3a" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+  </div>
+
+  <p class="subtitle" style="margin-top:22px">Pick which beat should carry the biggest <b>"wow"</b> — or just tell me what you think.</p>
+  <div class="beats">
+    <div class="beat option" data-choice="watch" onclick="pick(this)"><div class="ic">🏮</div><h3>WATCH</h3><p>Torches sweep the raid path across the gate, then darkness falls.</p></div>
+    <div class="beat option" data-choice="defend" onclick="pick(this)"><div class="ic">🛡️</div><h3>DEFEND</h3><p>Summon archers &amp; ronin onto the tiles you remembered.</p></div>
+    <div class="beat option" data-choice="spot" onclick="pick(this)"><div class="ic">⚔️</div><h3>SPOT &amp; SLASH</h3><p>One villager is a disguised oni. Slash it — smoke poof + combo!</p></div>
+  </div>
+
+<script>
+  const s=document.getElementById('stars');
+  for(let i=0;i<40;i++){const d=document.createElement('div');d.className='star';
+    d.style.left=Math.random()*100+'%';d.style.top=Math.random()*55+'%';
+    d.style.animationDelay=(Math.random()*3)+'s';s.appendChild(d);}
+  function pick(el){document.querySelectorAll('.beat').forEach(b=>b.classList.remove('sel'));
+    el.classList.add('sel'); if(window.toggleSelect)toggleSelect(el);}
+</script>
+</body>
+</html>

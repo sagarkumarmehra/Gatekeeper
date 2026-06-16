@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Gatekeeper 門番</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{ --gold:#f0b54a; --rose:#c4475f; --paper:#f3e6c4; --jade:#5ad17a; }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    font-family:'Outfit',system-ui,sans-serif; color:var(--paper);
+    background:#0d0a14; display:flex; align-items:center; justify-content:center;
+    overflow:hidden; touch-action:manipulation;
+  }
+
+  #app{
+    position:relative; width:min(100vw,420px); height:min(100vh,760px);
+    border-radius:28px; overflow:hidden;
+    background:linear-gradient(#1b2a52 0%, #3a2c63 38%, #7d3f5e 72%, #c0635a 100%);
+    box-shadow:0 20px 60px rgba(0,0,0,.6);
+  }
+  #app.shake{animation:shake .3s}
+  @keyframes shake{0%,100%{transform:translate(0,0)}20%{transform:translate(-6px,3px)}
+    40%{transform:translate(5px,-4px)}60%{transform:translate(-4px,-2px)}80%{transform:translate(4px,3px)}}
+
+  /* scenery */
+  .stars{position:absolute;inset:0;pointer-events:none}
+  .star{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;opacity:.8;animation:tw 3s infinite alternate}
+  @keyframes tw{to{opacity:.2}}
+  .moon{position:absolute;top:32px;right:40px;width:60px;height:60px;border-radius:50%;
+    background:radial-gradient(circle at 35% 35%,#fff8e1,#f0d98a);box-shadow:0 0 50px 10px rgba(240,217,138,.5)}
+  /* red velvet road leading to the gate */
+  .road{position:absolute;left:0;right:0;bottom:0;height:390px;z-index:3;pointer-events:none}
+  .road .trim,.road .carpet{position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+    clip-path:polygon(34% 0,66% 0,100% 100%,0 100%)}
+  .road .trim{width:304px;height:390px;background:linear-gradient(#e0bb52,#7a5c18);opacity:.9}
+  .road .carpet{width:288px;height:390px;
+    background:linear-gradient(90deg,rgba(255,255,255,.13),transparent 26%,transparent 74%,rgba(255,255,255,.13)),
+               linear-gradient(#b62828,#7d1717 55%,#581010);
+    box-shadow:inset 0 0 60px rgba(0,0,0,.55)}
+  .road .carpet::after{content:"";position:absolute;inset:0;clip-path:polygon(34% 0,66% 0,100% 100%,0 100%);
+    background:repeating-linear-gradient(90deg,rgba(0,0,0,.05) 0 6px,transparent 6px 12px)}
+
+  /* hanging lanterns with lights */
+  .lanterns{position:absolute;inset:0;z-index:8;pointer-events:none}
+  .lantern{position:absolute;border-radius:48% 48% 46% 46%;transform-origin:top center;
+    background:radial-gradient(circle at 42% 34%,#ffe6a0,#ef5a2e 66%,#b8261c);
+    box-shadow:0 0 18px 6px rgba(245,140,50,.6);
+    animation:sway 3.4s ease-in-out infinite, lglow 1.9s ease-in-out infinite alternate}
+  .lantern::before{content:"";position:absolute;top:-11px;left:50%;transform:translateX(-50%);width:2px;height:11px;background:#1c120a}
+  .lantern::after{content:"";position:absolute;top:-3px;left:50%;transform:translateX(-50%);width:11px;height:4px;border-radius:2px;background:#caa23a}
+  .lantern>i{position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);width:3px;height:8px;background:#caa23a;border-radius:2px}
+  @keyframes sway{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(7deg)}}
+  @keyframes lglow{from{filter:brightness(.82);opacity:.82}to{filter:brightness(1.22);opacity:1}}
+
+  /* glowing accents over the gate's own lanterns */
+  .gateglow{position:absolute;top:170px;left:50%;transform:translateX(-50%);width:400px;height:185px;z-index:4;pointer-events:none;
+    background:radial-gradient(ellipse,rgba(255,160,60,.30),transparent 70%);animation:lglow 2.6s ease-in-out infinite alternate}
+  .gatelights{position:absolute;top:92px;left:50%;transform:translateX(-50%);width:548px;height:299px;z-index:6;pointer-events:none}
+  .gdot{position:absolute;width:9px;height:9px;border-radius:50%;transform:translate(-50%,-50%);
+    background:radial-gradient(circle,#fff0b8,#ff8a2e);box-shadow:0 0 12px 5px rgba(255,150,50,.85);
+    animation:lglow 1.7s ease-in-out infinite alternate}
+  .fog{position:absolute;left:-20%;width:140%;height:60px;border-radius:50%;background:rgba(243,230,196,.08);
+    filter:blur(8px);animation:drift 16s linear infinite;pointer-events:none}
+  .fog.f1{bottom:250px}.fog.f2{bottom:180px;animation-duration:22s;opacity:.6}
+  @keyframes drift{from{transform:translateX(-8%)}to{transform:translateX(8%)}}
+  .ground{position:absolute;bottom:0;left:0;right:0;height:150px;background:linear-gradient(#7a3a55,#43213a)}
+
+  /* the gate image the villagers pass through */
+  .gate{position:absolute;top:92px;left:50%;transform:translateX(-50%);width:548px;max-width:none;height:auto;z-index:5;pointer-events:none;
+    filter:drop-shadow(0 12px 20px rgba(0,0,0,.5))}
+
+  /* HUD */
+  .hud{position:absolute;top:14px;left:14px;right:14px;display:flex;justify-content:space-between;align-items:flex-start;z-index:20}
+  .honor .label{font-size:9px;letter-spacing:2px;color:#f0cd8a;font-weight:800}
+  .hearts{display:flex;gap:3px;margin-top:4px}
+  .heart{width:16px;height:16px;border-radius:50%;background:#5ad17a;box-shadow:0 0 8px #5ad17a;transition:.3s}
+  .heart.lost{background:#3a2233;box-shadow:none;transform:scale(.8)}
+  .score{text-align:right}
+  .score b{font-family:'Cinzel',serif;font-size:22px;color:#fff;display:block;text-shadow:0 0 12px rgba(240,181,74,.6)}
+  .score .lvl{font-size:10px;letter-spacing:2px;color:#f0cd8a;font-weight:800}
+  .combo{position:absolute;top:62px;right:14px;font-family:'Cinzel',serif;font-weight:800;color:#ffd36b;
+    font-size:15px;text-shadow:0 0 14px #f0b54a;transform:rotate(6deg);opacity:0;transition:.2s;z-index:20}
+  .combo.show{opacity:1}
+
+  /* timer bar */
+  .timerwrap{position:absolute;top:96px;left:32px;right:32px;height:9px;border-radius:6px;
+    background:rgba(20,12,30,.5);overflow:hidden;z-index:20;opacity:0;transition:opacity .2s}
+  .timerwrap.show{opacity:1}
+  .timerbar{height:100%;width:100%;border-radius:6px;background:linear-gradient(90deg,#5ad17a,#f0b54a);transition:background .2s}
+
+  /* banner / prompt */
+  .banner{position:absolute;top:118px;left:0;right:0;text-align:center;z-index:25;pointer-events:none}
+  .banner h2{font-family:'Cinzel',serif;font-size:26px;color:#fff;text-shadow:0 2px 16px rgba(240,181,74,.5)}
+  .banner p{font-size:13px;color:#e7d3b6;margin-top:4px}
+
+  /* face cards row */
+  .row{position:absolute;top:288px;left:0;right:0;display:flex;justify-content:center;gap:12px;align-items:flex-end;z-index:12;padding:0 14px}
+  .card{position:relative;width:88px;cursor:pointer;transition:transform .15s;
+    filter:drop-shadow(0 8px 8px rgba(0,0,0,.45))}
+  .card:active{transform:scale(.96)}
+  .card .frame{border-radius:12px;overflow:hidden;border:3px solid #caa23a;background:#1a1322;
+    box-shadow:inset 0 0 0 2px #2c2350}
+  .card img{display:block;width:100%;height:118px;object-fit:cover}
+  .card.walkin{animation:walkin .45s ease both}
+  @keyframes walkin{from{transform:translateY(60px) scale(.6);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+  .card.poof{animation:poof .45s ease forwards}
+  @keyframes poof{to{transform:scale(1.3) rotate(8deg);opacity:0;filter:blur(5px)}}
+  .card.pass{animation:pass .5s ease forwards}
+  @keyframes pass{to{transform:translateY(-26px) scale(.7);opacity:0}}
+
+  /* hero */
+  .hero{position:absolute;bottom:14px;left:12px;width:128px;z-index:18;
+    filter:drop-shadow(0 8px 10px rgba(0,0,0,.5));transition:transform .01s}
+  .hero.idleanim{animation:bob 3.5s ease-in-out infinite}
+  @keyframes bob{50%{transform:translateY(-5px)}}
+  .hero img,.hero svg{display:block;width:100%}
+
+  /* effects */
+  .pop{position:absolute;font-family:'Cinzel',serif;font-weight:800;color:#ffe08a;font-size:22px;
+    text-shadow:0 0 10px #f0b54a;pointer-events:none;z-index:30;animation:pop .8s ease forwards}
+  @keyframes pop{0%{transform:translateY(0);opacity:1}100%{transform:translateY(-50px);opacity:0}}
+  .slashfx{position:absolute;width:110px;height:7px;background:linear-gradient(90deg,transparent,#fff,transparent);
+    border-radius:3px;z-index:29;pointer-events:none;animation:slashfx .3s ease forwards;transform:rotate(-25deg)}
+  @keyframes slashfx{0%{opacity:0;transform:rotate(-25deg) scaleX(.2)}50%{opacity:1}100%{opacity:0;transform:rotate(-25deg) scaleX(1.2)}}
+
+  /* buttons / overlays */
+  .btn{font-family:'Cinzel',serif;font-weight:800;font-size:16px;color:#231327;background:linear-gradient(#ffd779,#e0a23b);
+    border:none;border-radius:14px;padding:12px 26px;cursor:pointer;box-shadow:0 6px 0 #9a6a1f;transition:.1s;z-index:25}
+  .btn:active{transform:translateY(3px);box-shadow:0 3px 0 #9a6a1f}
+  .center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:16px;z-index:40;background:rgba(12,8,20,.55);backdrop-filter:blur(2px);text-align:center;padding:24px}
+  .center h1{font-family:'Cinzel',serif;font-size:38px;color:#fff;text-shadow:0 2px 20px rgba(240,181,74,.6)}
+  .center .jp{color:var(--gold)}
+  .center p{color:#e7d3b6;font-size:14px;max-width:300px;line-height:1.5}
+  .hidden{display:none!important}
+  .footprompt{position:absolute;bottom:120px;left:0;right:0;text-align:center;font-size:12px;color:#f3e6c4;z-index:18;pointer-events:none;text-shadow:0 1px 4px rgba(0,0,0,.6)}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="stars" id="stars"></div>
+  <div class="moon"></div>
+  <div class="fog f1"></div><div class="fog f2"></div>
+
+  <div class="ground"></div>
+  <!-- red velvet road leading up to the gate -->
+  <div class="road"><div class="trim"></div><div class="carpet"></div></div>
+
+  <!-- the gate the villagers pass through -->
+  <div class="gateglow"></div>
+  <img class="gate" id="gateImg" src="assets/gate.png" alt="">
+  <div class="gatelights" id="gatelights"></div>
+
+  <!-- hanging lanterns along the road -->
+  <div class="lanterns" id="lanterns"></div>
+
+  <!-- HUD -->
+  <div class="hud">
+    <div class="honor"><div class="label">VILLAGE HONOR</div><div class="hearts" id="hearts"></div></div>
+    <div class="score"><span class="lvl" id="nightLbl">WAVE 1</span><b id="scoreLbl">0</b></div>
+  </div>
+  <div class="combo" id="combo">×2 COMBO!</div>
+  <div class="timerwrap" id="timerwrap"><div class="timerbar" id="timerbar"></div></div>
+
+  <div class="banner hidden" id="banner"><h2 id="bannerH"></h2><p id="bannerP"></p></div>
+
+  <div class="row hidden" id="row"></div>
+  <div class="hero idleanim" id="hero"></div>
+
+  <div class="footprompt hidden" id="footprompt"></div>
+
+  <!-- title -->
+  <div class="center" id="titleScreen">
+    <h1>GATEKEEPER<br><span class="jp">門番</span></h1>
+    <p>Villagers approach the gate. One is a demon in disguise. Find the demon and strike fast — the quicker you spot it, the more honor you earn.</p>
+    <button class="btn" id="startBtn">Open the Gate</button>
+    <p id="hiLbl" style="font-size:12px"></p>
+  </div>
+
+  <!-- game over -->
+  <div class="center hidden" id="overScreen">
+    <h1>DEFEATED</h1>
+    <p>A demon slipped past the gate.</p>
+    <p style="font-size:20px;color:#fff">Score <b id="finalScore">0</b></p>
+    <p id="hiLbl2" style="font-size:13px"></p>
+    <button class="btn" id="retryBtn">Stand Again</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const MAX_HONOR=5, VCOUNT=27, DCOUNT=27;
+  const $=id=>document.getElementById(id);
+  const app=$("app");
+
+  // ---- sound: synthesized sword slash (no asset needed) ----
+  let actx=null;
+  function audio(){
+    if(!actx){ try{ actx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; } }
+    if(actx.state==="suspended") actx.resume();
+    return actx;
+  }
+  function playSlash(){
+    const ac=audio(); if(!ac) return;
+    const t=ac.currentTime, dur=0.2;
+    // airy swoosh: filtered noise sweeping up
+    const buf=ac.createBuffer(1, Math.floor(ac.sampleRate*dur), ac.sampleRate);
+    const d=buf.getChannelData(0);
+    for(let i=0;i<d.length;i++){ d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2); }
+    const src=ac.createBufferSource(); src.buffer=buf;
+    const bp=ac.createBiquadFilter(); bp.type="bandpass"; bp.Q.value=0.9;
+    bp.frequency.setValueAtTime(700,t); bp.frequency.exponentialRampToValueAtTime(4200,t+dur);
+    const g=ac.createGain(); g.gain.setValueAtTime(0.45,t); g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+    src.connect(bp); bp.connect(g); g.connect(ac.destination); src.start(t); src.stop(t+dur);
+    // metallic ring of the blade
+    const o=ac.createOscillator(); o.type="triangle";
+    o.frequency.setValueAtTime(1300,t+0.03); o.frequency.exponentialRampToValueAtTime(520,t+0.28);
+    const g2=ac.createGain(); g2.gain.setValueAtTime(0.0001,t+0.03);
+    g2.gain.linearRampToValueAtTime(0.16,t+0.05); g2.gain.exponentialRampToValueAtTime(0.001,t+0.32);
+    o.connect(g2); g2.connect(ac.destination); o.start(t+0.03); o.stop(t+0.34);
+  }
+
+  // hero sprite: idle PNG with SVG fallback
+  const HERO_SVG=`<svg viewBox="0 0 90 130"><ellipse cx="45" cy="126" rx="26" ry="5" fill="rgba(0,0,0,.35)"/>
+    <rect x="70" y="20" width="4" height="80" rx="2" fill="#dfe6ee" transform="rotate(12 72 60)"/>
+    <path d="M34 90 L30 124 L40 124 L44 96Z" fill="#23304f"/><path d="M50 92 L54 124 L64 124 L58 90Z" fill="#23304f"/>
+    <path d="M28 56 Q45 48 62 56 L66 96 Q45 104 24 96Z" fill="#b23a4a"/>
+    <circle cx="45" cy="38" r="16" fill="#f5d6ab"/><path d="M29 38 Q45 14 61 38 Q60 24 45 21 Q30 24 29 38Z" fill="#1c1726"/>
+    <rect x="29" y="30" width="32" height="5" rx="2" fill="#e0c14a"/>
+    <circle cx="39" cy="40" r="1.6" fill="#3aa0e0"/><circle cx="51" cy="40" r="1.6" fill="#3aa0e0"/></svg>`;
+
+  // load a hero pose image if available, fall back to SVG. Tracks which pose is shown.
+  const heroEl=$("hero");
+  function setHeroPose(name){
+    const img=new Image();
+    img.onload=()=>{ heroEl.innerHTML=`<img src="assets/${name}.png" alt="">`; };
+    img.onerror=()=>{ if(!heroEl.querySelector("img")) heroEl.innerHTML=HERO_SVG; };
+    img.src="assets/"+name+".png";
+  }
+  heroEl.innerHTML=HERO_SVG; setHeroPose("Hero");
+
+  // ---- face deck: pick non-repeating indices ----
+  function pickN(max,n){
+    const pool=[]; for(let i=1;i<=max;i++) pool.push(i);
+    for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
+    return pool.slice(0,n);
+  }
+  const pad=n=>String(n).padStart(2,"0");
+
+  // ---- state ----
+  let state="title", wave, score, honor, combo, demonIndex, cards, hi=+(localStorage.getItem("gatekeeper_hi")||0);
+  let timerId=0, roundStart=0, roundMs=0;
+
+  function cfg(n){
+    return {
+      faces: Math.min(3 + Math.floor((n-1)/3), 5),   // 3 -> 5
+      time:  Math.max(7000 - (n-1)*250, 3200)         // ms, ramps down
+    };
+  }
+
+  function renderHearts(){
+    const h=$("hearts"); h.innerHTML="";
+    for(let i=0;i<MAX_HONOR;i++){const d=document.createElement("div");
+      d.className="heart"+(i<honor?"":" lost"); h.appendChild(d);}
+  }
+  function setHUD(){ $("nightLbl").textContent="WAVE "+wave; $("scoreLbl").textContent=score; renderHearts(); }
+  function banner(h,p){ $("bannerH").textContent=h; $("bannerP").textContent=p||""; $("banner").classList.remove("hidden"); }
+  function hideBanner(){ $("banner").classList.add("hidden"); }
+  function foot(t){ const f=$("footprompt"); if(!t){f.classList.add("hidden");return;} f.textContent=t; f.classList.remove("hidden"); }
+
+  // ---- flow ----
+  function startGame(){ wave=1; score=0; honor=MAX_HONOR; combo=0; setHUD(); nextWave(); }
+
+  function nextWave(){
+    setHUD(); foot(""); hideBanner();
+    banner("Wave "+wave, "Watch the gate...");
+    setTimeout(()=>{ hideBanner(); spawnRound(); }, 1100);
+  }
+
+  function spawnRound(){
+    state="spot";
+    const c=cfg(wave);
+    const row=$("row"); row.innerHTML=""; row.classList.remove("hidden");
+    const vills=pickN(VCOUNT, c.faces);
+    const demonId=pickN(DCOUNT,1)[0];
+    demonIndex=Math.floor(Math.random()*c.faces);
+    cards=[];
+    for(let k=0;k<c.faces;k++){
+      const wrap=document.createElement("div"); wrap.className="card walkin";
+      wrap.style.animationDelay=(k*0.1)+"s";
+      const isDemon=(k===demonIndex);
+      const src = isDemon ? `assets/faces/demon_${pad(demonId)}.png`
+                          : `assets/faces/villager_${pad(vills[k])}.png`;
+      wrap.innerHTML=`<div class="frame"><img src="${src}" alt=""></div>`;
+      wrap.addEventListener("click",()=>onTap(k));
+      row.appendChild(wrap); cards.push(wrap);
+    }
+    foot("Tap the demon before the timer runs out");
+    startTimer(c.time);
+  }
+
+  function startTimer(ms){
+    roundMs=ms; roundStart=performance.now();
+    const tw=$("timerwrap"), bar=$("timerbar");
+    tw.classList.add("show"); bar.style.width="100%";
+    cancelAnimationFrame(timerId);
+    function tick(now){
+      const elapsed=now-roundStart;
+      const frac=Math.max(0,1-elapsed/roundMs);
+      bar.style.width=(frac*100)+"%";
+      bar.style.background = frac>0.5 ? "linear-gradient(90deg,#5ad17a,#f0b54a)"
+                          : frac>0.25 ? "linear-gradient(90deg,#f0b54a,#e0902f)"
+                          : "linear-gradient(90deg,#e0613f,#c4475f)";
+      if(elapsed>=roundMs){ timeUp(); return; }
+      timerId=requestAnimationFrame(tick);
+    }
+    timerId=requestAnimationFrame(tick);
+  }
+  function stopTimer(){ cancelAnimationFrame(timerId); $("timerwrap").classList.remove("show"); }
+
+  function timeUp(){
+    if(state!=="spot") return;
+    state="resolve"; stopTimer(); foot("");
+    // demon slips through the gate
+    const d=cards[demonIndex]; if(d) d.classList.add("pass");
+    combo=0; hideCombo(); loseHonor(); flash();
+    banner("It got past you!", "The demon slipped through");
+    setTimeout(()=>{ clearRow(); if(honor<=0) gameOver(); else { wave++; nextWave(); } }, 1300);
+  }
+
+  function onTap(k){
+    if(state!=="spot") return;
+    const elapsed=performance.now()-roundStart;
+    if(k===demonIndex){
+      state="resolve"; stopTimer(); foot("");
+      runAndSlash(cards[k], ()=>{
+        const frac=Math.max(0,1-elapsed/roundMs);
+        const speedBonus=Math.round(frac*60);     // up to +60 for instant
+        combo++;
+        const pts=40 + speedBonus + (combo>=2?(combo-1)*15:0);
+        addScore(pts, cards[k]); showCombo();
+        cards[k].classList.add("poof");
+        // villagers pass through safely
+        cards.forEach((c,i)=>{ if(i!==k) c.classList.add("pass"); });
+        banner("Demon Slain!", "+"+pts+" honor"+(frac>0.7?" · lightning fast!":""));
+        setTimeout(()=>{ clearRow(); wave++; nextWave(); }, 1200);
+      });
+    }else{
+      // struck an innocent villager
+      state="resolve"; stopTimer(); foot("");
+      slashFx(cards[k]); cards[k].classList.add("pass");
+      combo=0; hideCombo(); loseHonor(); flash();
+      const d=cards[demonIndex]; if(d) d.classList.add("pass");
+      banner("Wrong one!", "You struck a villager");
+      setTimeout(()=>{ clearRow(); if(honor<=0) gameOver(); else { wave++; nextWave(); } }, 1300);
+    }
+  }
+
+  // hero runs across AND up to the target card, slashes, then returns to idle
+  function runAndSlash(card, done){
+    const a=app.getBoundingClientRect(), c=card.getBoundingClientRect(), h=heroEl.getBoundingClientRect();
+    const heroCx=(h.left-a.left)+h.width/2, cardCx=(c.left-a.left)+c.width/2;
+    const targetX=cardCx-heroCx;
+    // bring the hero up so he stands right at the card and overlaps it slightly
+    const heroTop=h.top-a.top, cardBottom=c.bottom-a.top;
+    const targetY=(cardBottom-30)-heroTop;
+    heroEl.classList.remove("idleanim");
+    setHeroPose("pose_run");
+    heroEl.style.transition="transform .5s cubic-bezier(.3,.7,.4,1)";
+    requestAnimationFrame(()=>{ heroEl.style.transform=`translate(${targetX}px,${targetY}px)`; });
+    setTimeout(()=>{
+      slashFx(card);
+      setHeroPose("pose_leap"); // strike pose
+      setTimeout(()=>{
+        done && done();
+        // return home
+        heroEl.style.transition="transform .42s ease";
+        heroEl.style.transform="translate(0,0)";
+        setTimeout(()=>{ setHeroPose("Hero"); heroEl.classList.add("idleanim"); }, 440);
+      }, 240);
+    }, 520);
+  }
+
+  function clearRow(){ $("row").innerHTML=""; }
+
+  // ---- helpers ----
+  function addScore(pts, anchorEl){
+    score+=pts; $("scoreLbl").textContent=score;
+    const p=document.createElement("div"); p.className="pop"; p.textContent="+"+pts;
+    const r=(anchorEl||$("scoreLbl")).getBoundingClientRect(), a=app.getBoundingClientRect();
+    p.style.left=(r.left-a.left+10)+"px"; p.style.top=(r.top-a.top-10)+"px";
+    app.appendChild(p); setTimeout(()=>p.remove(),800);
+  }
+  function loseHonor(){ honor=Math.max(0,honor-1); renderHearts(); }
+  function showCombo(){ if(combo>=2){ const c=$("combo"); c.textContent="×"+combo+" COMBO!"; c.classList.add("show"); setTimeout(()=>c.classList.remove("show"),1200);} }
+  function hideCombo(){ $("combo").classList.remove("show"); }
+  function flash(){ app.classList.add("shake"); setTimeout(()=>app.classList.remove("shake"),300); }
+  function slashFx(wrap){
+    const fx=document.createElement("div"); fx.className="slashfx";
+    const r=wrap.getBoundingClientRect(), a=app.getBoundingClientRect();
+    fx.style.left=(r.left-a.left-12)+"px"; fx.style.top=(r.top-a.top+r.height/2)+"px";
+    app.appendChild(fx); setTimeout(()=>fx.remove(),300); flash(); playSlash();
+  }
+
+  function gameOver(){
+    state="over"; stopTimer(); $("row").classList.add("hidden"); foot(""); hideBanner();
+    if(score>hi){ hi=score; localStorage.setItem("gatekeeper_hi",hi); }
+    $("finalScore").textContent=score;
+    $("hiLbl2").textContent="Best: "+hi;
+    $("overScreen").classList.remove("hidden");
+  }
+
+  // ---- init ----
+  (function stars(){ const s=$("stars");
+    for(let i=0;i<36;i++){const d=document.createElement("div");d.className="star";
+      d.style.left=Math.random()*100+"%";d.style.top=Math.random()*45+"%";
+      d.style.animationDelay=(Math.random()*3)+"s";s.appendChild(d);} })();
+  // hanging lanterns down both sides of the road [leftPct, topPct, size]
+  (function lanterns(){
+    const L=$("lanterns");
+    const pos=[[33,46,16],[22,62,20],[10,80,26],[67,46,16],[78,62,20],[90,80,26]];
+    pos.forEach((p,i)=>{
+      const el=document.createElement("div"); el.className="lantern";
+      el.style.left=p[0]+"%"; el.style.top=p[1]+"%";
+      el.style.width=p[2]+"px"; el.style.height=Math.round(p[2]*1.3)+"px";
+      el.style.animationDelay=(i*0.3)+"s, "+(i*0.25)+"s";
+      el.innerHTML="<i></i>"; L.appendChild(el);
+    });
+  })();
+  // glow dots over the gate's own lanterns [leftPct, topPct]
+  (function gateLights(){
+    const G=$("gatelights");
+    const d=[[50,30],[46,40],[54,40],[39,54],[61,54],[19,44],[27,52],[81,44],[73,52]];
+    d.forEach((p,i)=>{
+      const el=document.createElement("div"); el.className="gdot";
+      el.style.left=p[0]+"%"; el.style.top=p[1]+"%"; el.style.animationDelay=(i*0.2)+"s";
+      G.appendChild(el);
+    });
+  })();
+  // hide glow accents if the gate image is unavailable
+  $("gateImg").addEventListener("error",()=>{ $("gatelights").style.display="none"; $("gateImg").style.display="none"; });
+
+  renderHearts();
+  $("hiLbl").textContent = hi? "Best: "+hi : "";
+  $("startBtn").addEventListener("click",()=>{ audio(); $("titleScreen").classList.add("hidden"); $("row").classList.remove("hidden"); startGame(); });
+  $("retryBtn").addEventListener("click",()=>{ $("overScreen").classList.add("hidden"); startGame(); });
+})();
+</script>
+</body>
+</html>
